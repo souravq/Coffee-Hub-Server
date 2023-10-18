@@ -5,10 +5,14 @@ const cors = require("cors");
 
 const app = express();
 
+
 app.use(cors());
 
-const PORT = 5000;
-const uri = "mongodb+srv://souravbera515:mJZyARsep2pPLuYY@cluster1.h1mhvli.mongodb.net/?retryWrites=true&w=majority";
+require('dotenv').config()
+
+const PORT = process.env.APP_PORT || 5000;
+const uri = `mongodb+srv://${process.env.APP_USERNAME}:${process.env.APP_PASS}@cluster1.h1mhvli.mongodb.net/?retryWrites=true&w=majority`;
+console.log(uri);
 
 
 const client = new MongoClient(uri, {
@@ -139,5 +143,6 @@ process.on('SIGINT', async () => {
 });
 
 app.listen(PORT, () => {
+   // console.log(process.env);
   console.log(`App is listening on PORT ${PORT}`);
 });

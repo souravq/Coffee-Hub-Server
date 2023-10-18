@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion , ObjectId} = require('mongodb');
 
 const cors = require("cors");
 
@@ -42,6 +42,8 @@ app.get('/', (req, res) => {
   res.send("Hello World");
 });
 
+
+// Fetch All Coffee Data
 app.get('/coffee', async (req, res) => {
   try {
     const result = await req.db.find().toArray();
@@ -52,11 +54,27 @@ app.get('/coffee', async (req, res) => {
   }
 });
 
+// Fetch Single Coffee Data
+app.get('/coffee/:id', async (req, res) => {
+    let id = req.params.id;
+    console.log("Enter");
+    //console.log(id);
+    try {
+      const result = await req.db.findOne({_id:new ObjectId(id)});
+      console.log(result);
+      res.send(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+// ADD COFFEE POST API
+
 app.post('/coffee', async (req, res) => {
     const data = req.body;
     console.log(data);
   try {
-    const myDoc = { coffeeName: "Americano Coffee", chef: "Mr. Matin Paul", price: "890" };
     const result = await req.db.insertOne(data);
     res.send(result);
   } catch (error) {
@@ -64,6 +82,49 @@ app.post('/coffee', async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+// UPDATE COFFEE PUT API
+
+app.put("/coffee", async(req,res)=>{
+    const data = req.body;
+    console.log(data);
+    try{
+        const filter = {_id:new ObjectId(data.coffeeId)};
+        const options = {upsert:true};
+        const updateDoc ={
+            $set:{
+                coffeeName:data.coffeeName,
+                coffeeChef:data.coffeeChef,
+                coffeeSupplier:data.coffeeSupplier,
+                coffeeTaste:data.coffeeTaste,
+                coffeeCategory: data.coffeeCategory,
+                coffeePrice:data.coffeePrice,
+                coffeePhotoUrl:data.coffeePhotoUrl
+            }
+        }
+        const result = await req.db.updateOne(filter,updateDoc,options);
+        res.send(result);
+
+    }catch(error){
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+})
+
+// Delete Coffee Api
+
+app.delete("/coffee/:id",async(req,res)=>{
+    const id = req.params.id;
+    try{
+        const result = await req.db.deleteOne({_id: new ObjectId(id)});
+        console.log(result);
+        res.send(result);
+
+    }catch(error){
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+})
 
 // Close the MongoDB connection when the application is terminated
 process.on('SIGINT', async () => {
